@@ -21,6 +21,7 @@ passport.use('signup', new Strategy(
         passReqToCallback: true
     }, 
     (req, username, password, done) => {
+        
         const { email } = req.body;
         Users.findOne({username}, (err, user) => {
             if(user) return done(null, false);

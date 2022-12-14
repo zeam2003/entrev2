@@ -21,8 +21,9 @@ app.post('/register', (req, res) => {
 
     usuarios.push({username, password, email});
 
-    const token = JWT.sign({data: {username, email}}, PKEY, {expiresIn:'48h'});
-    res.send({error: false,token: token})
+    const token = JWT.sign({data: {username, email}}, PKEY, {expiresIn:'24h'});
+    const refreshToken = JWT.sign({data: {username, email}}, PKEY, {expiresIn:'48h'});
+    res.send({error: false,token: token, rToken: refreshToken})
 });
 
 const JWTMW = (req, res, next) => {
