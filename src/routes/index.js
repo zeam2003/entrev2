@@ -10,7 +10,8 @@ const userRoutes = Router();
 
 (async () => {
     try {
-        await mongoose.connect(connection.mongoDB.uri, connection.mongoDB.options)
+        await mongoose.connect(connection.mongoDB.uri, connection.mongoDB.options,{strictQuery: true})
+        
     } catch (error) {
         throw new Error(error);
     }
@@ -40,12 +41,25 @@ passport.use('signup', new Strategy(
 
 
 passport.use('login', new Strategy({}, (username, password, done) => {
-    console.log(username)
+    console.log(username, password)
     Users.findOne({username}, (err, user) => {
-        if(err) return done(err);
-        if(!user) return done(null, false);
-        if(!validatePass(password, user.password)) return done(null, false);
-            return done(null, user)
+        try {
+            
+            if(!user) {
+                console.log('no se econtro el usuario')
+                return done(null, false);
+            } if (!validatePass(password, user.password)) {
+                return done(null, false);
+            } else {
+                return done(null, user)
+            }
+            
+            
+        } catch (error) {
+            console.log(error)
+            return done(error)
+        }
+        
     });
 }));
 
@@ -77,11 +91,41 @@ const authMW = (req, res, next) => {
     req.isAuthenticated() ? next() : res.send({ error: 'error'})
 }
 
+userRoutes.get('/', (req, res) => {
+    try {
+        res.render('index')
+    } catch (error) {
+        console.log(error)
+    }
+})
+
 userRoutes.post('/login', passport.authenticate('login', {failureRedirect: '/error'}), (req, res ) => {
+    try {
+        const { username, password } = req.body;
+        console.log('hola')
+        //res.send({error: false, username, password});
+        res.render('list', {username, password} )
+    } catch (error) {
+        console.log(error)
+    }
     
-    res.send({error: false});
-    //res.redirect('/home');
+    
 });
+
+userRoutes.get('/signin', (req, res) => {
+    res.render('signin')
+})
+
+// Lista o vista principal despues del login
+userRoutes.get('/list', (req, res) => {
+    res.render('list')
+})
+
+// Vista de Error
+userRoutes.get('/error', (req, res) => {
+    res.render('error');
+})
+
 
 // signin
 userRoutes.post('/signup', passport.authenticate('signup', {failureRedirect: '/error'}) , ( req, res ) => {
