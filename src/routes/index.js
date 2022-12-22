@@ -40,7 +40,7 @@ passport.use('signup', new Strategy(
 }));
 
 
-passport.use('login', new Strategy({}, (username, password, done) => {
+passport.use('dashboard', new Strategy({}, (username, password, done) => {
     console.log(username, password)
     Users.findOne({username}, (err, user) => {
         try {
@@ -88,7 +88,7 @@ userRoutes.use(passport.session());
 
 
 const authMW = (req, res, next) => {
-    req.isAuthenticated() ? next() : res.send({ error: 'error'})
+    req.isAuthenticated() ? next() : res.redirect('/noauth')
 }
 
 userRoutes.get('/', (req, res) => {
@@ -99,26 +99,33 @@ userRoutes.get('/', (req, res) => {
     }
 })
 
-userRoutes.post('/login', passport.authenticate('login', {failureRedirect: '/error'}), (req, res ) => {
+// Ingreso
+userRoutes.post('/dashboard', passport.authenticate('dashboard', {failureRedirect: '/error'}), (req, res ) => {
     try {
         const { username, password } = req.body;
         console.log('hola')
-        //res.send({error: false, username, password});
-        res.render('list', {username, password} )
+        console.log('usuario',req.user)
+        res.render('list', {username} )
     } catch (error) {
         console.log(error)
     }
-    
-    
 });
 
-userRoutes.get('/signin', (req, res) => {
-    res.render('signin')
+userRoutes.get('/dashboard', authMW,(req, res) => {
+    if(!req.user) {
+        res.redirect('/')
+    }else{
+        const { username } = req.user;
+        res.render('list', {username})
+    }
+    
 })
 
+
 // Lista o vista principal despues del login
-userRoutes.get('/list', (req, res) => {
-    res.render('list')
+userRoutes.get('/list', authMW,(req, res) => {
+    const { username } = req.user;
+    res.render('list',{username})
 })
 
 // Vista de Error
@@ -129,22 +136,37 @@ userRoutes.get('/error', (req, res) => {
 
 // signin
 userRoutes.post('/signup', passport.authenticate('signup', {failureRedirect: '/error'}) , ( req, res ) => {
-    console.log('estoy aca')
-   // const { user } = req.body
-    // console.log(user)
     res.send({error: false, msg: 'usuario creado'})
 });
+
+userRoutes.get('/signin', (req, res) => {
+    res.render('signin')
+})
 
 
 // datos
 userRoutes.get('/datos', authMW, (req, res) => {
-    
     res.send({hola: 'mundo', data: req.user})
 })
 
 userRoutes.get('/prueba', (req, res) => {
     console.log('hola')
 })
+
+// logout
+userRoutes.get('/logout', (req, res) => {
+    req.logout(req.user, err => {
+        if(err) return next(res.redirect('/error'));
+        res.redirect('/')
+    });
+    
+})
+
+// authorizations
+userRoutes.get('/noauth', (req, res) => {
+    res.render('noauth');
+})
+
 
 
 export default userRoutes;
