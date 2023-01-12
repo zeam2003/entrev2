@@ -10,6 +10,8 @@ import handlebars from 'express-handlebars';
 import ParseArgs from 'minimist';
 import productRoutes from "./routes/product.js";
 dotenv.config();
+import  ChildProcess  from "child_process";
+import { stderr } from "process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +29,10 @@ const options = {
 
 const argv = process.argv.slice(2);
 const { modo, port, debug, otros:  _ } = ParseArgs(argv, options);
+
+ChildProcess.exec('ls -lh', (error, stdout, stderr) => {
+    console.log(stdout)
+});
 
 // Iniciar Express
 const app = express();

@@ -10,6 +10,7 @@ const userRoutes = Router();
 
 (async () => {
     try {
+        console.log(connection.mongoDB.uri);
         await mongoose.connect(connection.mongoDB.uri, connection.mongoDB.options,{strictQuery: true})
         
     } catch (error) {
