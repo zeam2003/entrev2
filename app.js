@@ -23,11 +23,12 @@ const app = express();
 
 // Data on wire - Servidor que no sirve html
 app.set('trust proxy', 1);
-app.use(cors({
+/* app.use(cors({
     origin: '*',
     credentials: true,
-    methods: 'GET, POST, PATCH, PUT, DELETE'}));
-app.use(corsMiddleware)
+    methods: 'GET, POST, PATCH, PUT, DELETE'})); */
+//app.use(corsMiddleware)
+app.use(cors({origin: true, credentials: true}));
 
 // Configuración del Servidor
 app.use(express.json());
